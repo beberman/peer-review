@@ -5,7 +5,7 @@ const {
     getReviews,
     getComments,
     completed
-} = require('./googleapi');
+} = require('../googleapi');
 
 const {google} = require('googleapis');
 const email = 'test@wpi.edu';

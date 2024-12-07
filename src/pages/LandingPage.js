@@ -2,20 +2,18 @@ import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 
+
 function LandingPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [teamNumber, setTeamNumber] = useState('');
+    const numberTeams = 8;
 
-    const teams = [
-        {id: 1, name: 'Team 1'},
-        {id: 2, name: 'Team 2'},
-        {id: 3, name: 'Team 3'},
-        {id: 4, name: 'Team 4'},
-        {id: 5, name: 'Team 5'},
-        {id: 6, name: 'Team 6'},
-        {id: 7, name: 'Team 7'}
-    ];
+    const teams = Array.from({length: numberTeams}, (_, i) => i + 1).map((teamNumber) => ({
+        id: teamNumber,
+        name: `Team ${teamNumber}`
+    }));
+
 
     const handleSubmit = () => {
         if (!email || !teamNumber) {
