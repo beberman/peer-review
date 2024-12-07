@@ -55,3 +55,29 @@ export async function getQuestions() {
     }
 }
 
+// Post the suurvey answers
+export async function submitSurvey(userID, ratings) {
+    try {
+        const response = await fetch('${BASE_URL}/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({userID, ratings})
+        });
+        if (response.ok) {
+            const result = {
+                status: 'success',
+                message: 'Survey submitted'
+            };
+            return result;
+        } else {
+            const error = await response.json();
+            throw new Error(error.message);
+        }
+    } catch (error) {
+        Logger.error('Error submitting survey:', error);
+        throw error;
+    }
+}
+

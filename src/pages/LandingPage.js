@@ -26,6 +26,11 @@ function LandingPage() {
         navigate('/login', {state: {email, teamNumber}});
     };
 
+    const handleEmailChange = (e) => {
+        const inputEmail = e.target.value;
+        setEmail(inputEmail.trim().toLowerCase());
+    };
+
 
     return (
         <div className="container mt-5">
@@ -68,7 +73,7 @@ function LandingPage() {
                                     className="form-control"
                                     placeholder="Enter your email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={handleEmailChange}
                                 />
                             </div>
                             

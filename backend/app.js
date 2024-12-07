@@ -9,8 +9,27 @@ const {
 
 const app = express();
 
+const Logger = {
+  info: (message, ...optionalParams) => {
+    console.info(`[INFO] ${new Date().toISOString()}: ${message}`, ...optionalParams);
+  },
+  warn: (message, ...optionalParams) => {
+    console.warn(`[WARN] ${new Date().toISOString()}: ${message}`, ...optionalParams);
+  },
+  error: (message, ...optionalParams) => {
+    console.error(`[ERROR] ${new Date().toISOString()}: ${message}`, ...optionalParams);
+  },
+  debug: (message, ...optionalParams) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[DEBUG] ${new Date().toISOString()}: ${message}`, ...optionalParams);
+    }
+  },
+};
+
+export default Logger;
+
 const injectLogger = (req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    Logger.debug(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 };
 
@@ -26,27 +45,27 @@ app.use((err, req, res, next) => {
 
 app.post('/api/validate', async (req, res) => {
     const { teamNumber, email } = req.body;
-    console.log(teamNumber, email);
+    Logger.debug(teamNumber, email);
 
     // Validate the team number and email combination
     try {
         const student = await checkStudent(email, teamNumber);
-        console.log("found students");
-        console.log("student", student);
+        Logger.debug("found students");
+        Logger.debug("student", student);
         if (student === undefined ||
             !student) {
-            console.log("returning 401");
+            Logger.debug("returning 401");
             return res.status(401).json({ success: false, message: 'Invalid team or email' });
         }
 
         const complete = await completed(student);
         if (complete) {
-            console.log("Student completed");
-            console.log("returning 200")
+            Logger.debug("Student completed");
+            Logger.debug("returning 200")
             return res.json({ success: true, message: 'Student has completed the assignment' });
         } 
 
-        console.log("Returning team");
+        Logger.debug("Returning team");
         const members = await getTeam(teamNumber);
         res.json({ success: true, members });
     } catch (error) {

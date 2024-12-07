@@ -1,14 +1,18 @@
 import React, {useEffect, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
-import {getQuestions} from '../api/api';
+import {getQuestions, submitSurvey} from '../api/api';
+import Logger from './Logger';
 
 function Survey () {
     const location = useLocation();
     const navigate = useNavigate();
 
     const {email, teamNumber, members=[]} = location.state || {};
+    const [self, setSelf] = useState(null);
+    const [memberList, setMemberList] = useState(null);
 
     const [ratings, setRatings] = useState({});
+    const [comments, setComments] = useState({});
 
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,19 +21,55 @@ function Survey () {
     useEffect (() => {
         if (!email || !teamNumber || members.length === 0) {
             navigate('/');
+        } else {
+            const foundUser = members.find((member) => member.Email === email);
+            if (foundUser) {
+                const self = {
+                    UserID: foundUser.UserID,
+                    Name: "Self",
+                    Email: email,
+                    Team: teamNumber
+                }
+                setSelf(self);
+                const otherMembers = members.filter((member) => member.Email !== email);
+                const mList = [self, ...otherMembers];
+                setMemberList(mList);
+            } else {
+                Logger.error('User not found in team members');
+                navigate('/');
+            }
         }
-        
+
     }, [email, teamNumber, members, navigate]);
 
-    const otherMembers = members.filter((member) => member.Email !== email);
-    const thisUserId = members.find((member) => member.Email === email).UserID;
-    const self = {UserID: thisUserId,
-                  Name: "Self",
-                  Email: email,
-                  Team: teamNumber};
-        
-    const memberList = [self, ...otherMembers];
+    const handleSubmit = async () => {
+        const payload = memberList.map((member) => {
+            const ratingsForMember = ratings[member.UserID];
+            return {
+                UserID: member.UserID,
+                Ratings: questions.map((q) => ({
+                    QuestionID: q.ID,
+                    Rating: ratingsForMember?.[q.ID] || 0
+                })),
+                comment: comments[member.UserID] || '',
+            };
+        });
 
+        try {
+            const response = await submitSurvey(self.UserID, payload);
+            if (response.status === 'success') {
+                navigate('/done');
+            } else {
+                setError("Failed to submit survey");
+                alert('Failed to submit survey');
+            }
+        } catch (error) {
+            Logger.error('Error submitting survey', error);
+            setError("Failed to submit survey");
+            alert('Failed to submit survey');
+        }
+    };
+    
     useEffect (() => {
         const fetchQuestions = async () => {
             try {
@@ -56,6 +96,13 @@ function Survey () {
         }));
     };
 
+    const handleCommentChange = (userID, value) => {
+        setComments((prevState) => ({
+            ...prevState,
+            [userID]: value
+        }));
+    }
+
     if (loading) {
         return (
             <div className="container mt-5">
@@ -72,21 +119,20 @@ function Survey () {
         );
     }
 
-    const ratingLevels = [
-        {level: 1,
-         statement: "Did not provide any substantial value on the topic"},
-        {level: 2,
-         statement: "Provided some value on the topic"},
-        {level: 3,
-         statement: "Provided average for the team on the topic"},
-        {level: 4,
-         statement: "Provided above average value on the topic"},
-        {level: 5,
-         statement: "Was critical to the team on the topic"}
-    ];
-        
-
     const renderLevels = () => {
+        const ratingLevels = [
+            {level: 1,
+             statement: "Did not provide any substantial value on the topic"},
+            {level: 2,
+             statement: "Provided some value on the topic"},
+            {level: 3,
+             statement: "Provided average for the team on the topic"},
+            {level: 4,
+             statement: "Provided above average value on the topic"},
+            {level: 5,
+             statement: "Was critical to the team on the topic"}
+        ];
+
         return (
         <div className="mb-4">
             <h2> Rating Levels </h2>
@@ -115,6 +161,24 @@ function Survey () {
         </div>);
     }
 
+    const isRowCompleted = (ratingsForMember) => {
+        return questions.every((q) => ratingsForMember?.[q.ID]);
+    };
+
+    const computeScore = (ratingsForMember) => {
+        if (!isRowCompleted(ratingsForMember)) {
+            return '';
+        }
+        const ratingValues = Object.values(ratingsForMember).map(Number);
+        const beginningAverage = ratingValues.slice(0, ratingValues.length - 1).reduce((acc, val) => acc + val, 0) / (ratingValues.length - 1);
+        const overallScore = ratingValues[ratingValues.length - 1];
+        const rawScore =  (0.7 * beginningAverage) + (0.3 * overallScore);
+        return Number(rawScore.toPrecision(2));
+    };
+
+    const allRowsComplete = memberList.every((member) => isRowCompleted(ratings[member.UserID]));
+        
+
     const renderTable = () => {
         return (
         <div className="table-response">
@@ -125,6 +189,7 @@ function Survey () {
                         {questions.map((q) => (
                             <th key={q.ID}>{q.Topic}</th>
                         ))}
+                        <th>Overall Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -149,12 +214,46 @@ function Survey () {
                                     </select>
                                 </td>
                             ))}
+                            <td>
+                                {computeScore(ratings[member.UserID]) || 'N/A'}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
         </div>
         )
+    };
+
+    const renderCommentTable = () => {
+        return (
+        <div className="table-responsive mt-4">
+            <table className="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Comment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {memberList.map((member) => (
+                        <tr key={member.UserID}>
+                            <td>{member.Name}</td>
+                            <td>
+                                <textarea
+                                    className="form-control"
+                                    value={comments[member.UserID] || ''}
+                                    onChange={(e) => handleCommentChange(member.UserID, e.target.value)}
+                                    placeholder="Enter your comment"
+                                    rows="2"
+                                ></textarea>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+        );
     };
 
     return (
@@ -169,6 +268,17 @@ function Survey () {
             {/* Table */}
             {renderTable()}
 
+            {/* Comments */}
+            {renderCommentTable()}
+
+            {/* Submit Button */}
+            <button
+                className="btn btn-primary mt-3"
+                disabled={!allRowsComplete}
+                onClick={handleSubmit}
+            >
+                Submit
+            </button>
         </div>
     );
 };
