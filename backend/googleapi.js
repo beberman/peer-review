@@ -68,6 +68,11 @@ async function checkStudent(email, teamid) {
     }
 }
 
+async function getStudent(userID) {
+    const data = await getStudents();
+    return data.find(obj => obj.UserID === userID);
+}
+
 async function getTeam(teamid) {
     const data = await getStudents();
     const teamidStr = teamid.toString();
@@ -199,6 +204,7 @@ async function clearData() {
 
 module.exports = {
     getStudents,
+    getStudent,
     getTeam,
     checkStudent,
     getQuestions,

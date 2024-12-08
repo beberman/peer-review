@@ -21,9 +21,11 @@ export async function validateUser(teamNumber, email) {
 
         // if 200 and empty team then already in progress
         const data = await response.json();
+
         if (data.members === undefined) {
             return {status: 'inProgress'};
         } else {
+            localStorage.setItem('authToken', data.token);
             const result = {
                 status: 'success',
                 members: data.members
@@ -58,10 +60,12 @@ export async function getQuestions() {
 // Post the suurvey answers
 export async function submitSurvey(userID, ratings) {
     try {
+        const token = localStorage.getItem('authToken');
         const response = await fetch(`${BASE_URL}/submit`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({userID, ratings})
         });
