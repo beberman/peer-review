@@ -1,18 +1,22 @@
 const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
+const Logger =require('./logger');
+
 require('dotenv').config();
 
 // Load service account credentials
 const credentials = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'sheets-permission.json'))
+    fs.readFileSync(path.join(__dirname, 'sheets-permission.json'))
 );
 
 const spreadsheetId = process.env.SPREADSHEET_ID;
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+
 const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: SCOPES,
+    credentials,
+    scopes: [
+        'https://www.googleapis.com/auth/spreadsheets', // Full access to Sheets
+    ],
 });
 
 const sheets = google.sheets({ version: 'v4', auth });
@@ -110,6 +114,89 @@ async function completed(student) {
     }
 }
 
+async function saveRatings(userId, ratings) {
+    try {
+        // Log the received data for debugging
+        Logger.debug(`Storing survey data for user: ${userId}`);
+        const existingReviews = await getReviews(userId);
+        const existingComments = await getComments(userId);
+
+        if (!emptyArray(existingReviews)) {
+            Logger.debug('User has already submitted reviews');
+            return { status: 'error', message: 'User has already submitted reviews' };
+        }
+        if (!emptyArray(existingComments)) {
+            Logger.debug('User has already submitted comments');
+            return { status: 'error', message: 'User has already submitted comments' };
+        }
+
+        const ratingRows = [];
+        const commentRows = [];
+        ratings.map((entry) => {
+            if (entry.comment) {
+                commentRows.push([userId, entry.UserID, entry.comment]);
+            }
+
+            entry.Ratings.map((rating) => {
+                ratingRows.push([userId, rating.QuestionID, entry.UserID, rating.Rating]);
+            });
+        });
+
+        /* writing to the Rating sheet */
+        if (ratingRows.length > 0) {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId,
+                range: 'Reviews!A1',
+                valueInputOption: 'RAW',
+                resource: {
+                    values: ratingRows
+                }
+            });
+        }
+
+        if (commentRows.length > 0) {
+            await sheets.spreadsheets.values.append({
+                spreadsheetId,
+                range: 'Comments!A1',
+                valueInputOption: 'RAW',
+                resource: {
+                    values: commentRows
+                }
+            });
+        }
+
+        Logger.debug('Survey data stored successfully');
+        return { status: 'completed', message: 'Survey data stored successfully' };
+
+    } catch (error) {
+        Logger.error('Error storing survey data:', error);
+        // Simulate an error response
+        return { status: 'error', message: 'Failed to store survey data' };
+    }
+}
+
+async function clearData() {
+    try {
+        // Log the received data for debugging
+        Logger.debug('Clearing all data');
+        await sheets.spreadsheets.values.clear({
+            spreadsheetId,
+            range: 'Reviews!A2:D1000'
+        });
+        await sheets.spreadsheets.values.clear({
+            spreadsheetId,
+            range: 'Comments!A2:C1000'
+        });
+
+        Logger.debug('All data cleared successfully');
+        return { status: "completed", message: 'All data cleared successfully' };
+    } catch (error) {
+        console.error('Error clearing data:', error);
+        // Simulate an error response
+        return { status: 'error', message: 'Failed to clear data' };
+    }
+}
+
 module.exports = {
     getStudents,
     getTeam,
@@ -117,5 +204,7 @@ module.exports = {
     getQuestions,
     getReviews,
     getComments,
-    completed
+    completed,
+    saveRatings,
+    clearData
 };
