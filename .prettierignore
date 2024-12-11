@@ -1,0 +1,12 @@
+# Ignore node_modules and build outputs
+node_modules/
+dist/
+
+# Ignore static assets
+public/
+*.min.js
+*.bundle.js
+
+# Ignore other temporary files
+*.log
+coverage/

@@ -1,13 +1,11 @@
 const { google } = require('googleapis');
 const fs = require('fs');
+const Logger = require('firebase-functions/logger');
 const path = require('path');
-const Logger = require('./logger');
-
-require('dotenv').config();
 
 // Load service account credentials
 const credentials = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'sheets-permission.json'))
+  fs.readFileSync(path.join(__dirname, '../sheets-permission.json'))
 );
 
 const spreadsheetId = process.env.SPREADSHEET_ID;

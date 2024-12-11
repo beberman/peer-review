@@ -1,44 +1,59 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { validateUser } from '../api/api';
+import Logger from './Logger';
 
 function Login() {
   // Retrieve the state passed from LandingPage
-    const location = useLocation();
-    const { email, teamNumber } = location.state || {};
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { email, teamNumber } = location.state || {};
 
-    const handleLogin = () => {
-        if (!email || !teamNumber ) {
-            alert('Email and teamNumber are required.');
-            return;
+  useEffect(() => {
+    const handleLogin = async () => {
+      if (!email || !teamNumber) {
+        Logger.debug('Email or teamNumber are missing');
+        alert('Email and teamNumber are required.');
+        navigate('/');
+        return;
+      }
+      try {
+        const response = await validateUser(teamNumber, email);
+
+        if (response.status === 'success') {
+          Logger.debug('Success');
+          const members = response.members;
+          navigate('/survey', { state: { email, teamNumber, members } });
+          return;
         }
+        if (response.status === 'inProgress') {
+          Logger.debug('inProgress');
+          alert(
+            'Student has completed survey. To redo the survey, please contact the instructor.'
+          );
+          navigate('/');
+          return;
+        }
+        Logger.debug('Unexpected response status:');
+        alert('An error occurred while validating the team number and email');
+        navigate('/');
+      } catch (error) {
+        Logger.error('Error logging in:');
+        alert('An error occurred while validating the team number and email');
+        navigate('/');
+      }
     };
 
-    return (
-        <div className="container mt-5">
-          <div className="row justify-content-center">
-            <div className="col-md-6">
-              <div className="card shadow">
-                <div className="card-body">
-                  <h1 className="card-title text-center mb-4">Login</h1>
-                  <p className="text-center text-muted">Welcome back, Team {teamNumber}!</p>
+    handleLogin();
+  }, [email, teamNumber, navigate]);
 
-                  {/* Email Display */}
-                  <div className="mb-3">
-                    <label htmlFor="emailInput" className="form-label">Email Address</label>
-                    <input
-                      type="email"
-                      id="emailInput"
-                      className="form-control"
-                      value={email || ''}
-                      readOnly
-                      />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-    );
-};
+  return (
+    <div className="container mt-5">
+      <h1> Validating Team Number and Email</h1>
+      <p> Please wait...</p>
+    </div>
+  );
+}
 
 export default Login;
