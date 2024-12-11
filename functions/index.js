@@ -7,8 +7,11 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+if (process.env.NODE_ENV !== 'production') {
+  const path = require('path');
+  require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+}
+
 
 const { onRequest } = require('firebase-functions/v2/https');
 const Logger = require('firebase-functions/logger');

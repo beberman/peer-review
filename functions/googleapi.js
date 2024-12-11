@@ -1,14 +1,10 @@
 const { google } = require('googleapis');
-const fs = require('fs');
 const Logger = require('firebase-functions/logger');
-const path = require('path');
 
-// Load service account credentials
-const credentials = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../sheets-permission.json'))
-);
-
-const spreadsheetId = process.env.SPREADSHEET_ID;
+// Load service account credentials and id
+const getConfig = require('./config');
+const credentials = getConfig('credentials');
+const spreadsheetId = getConfig('spreadsheetId');
 
 const auth = new google.auth.GoogleAuth({
   credentials,
@@ -17,7 +13,12 @@ const auth = new google.auth.GoogleAuth({
   ],
 });
 
-const sheets = google.sheets({ version: 'v4', auth });
+let sheets;
+try {
+    sheets = google.sheets({ version: 'v4', auth });
+} catch (error) {
+    Logger.error('Error initializing Google Sheets API:', error);
+}
 
 const StudentData = 'Students!A1:D36';
 const QuestionData = 'Questions!A1:C7';
@@ -25,21 +26,25 @@ const ReviewData = 'Reviews!A1:D500';
 const CommentData = 'Comments!A1:D500';
 
 async function getSheetData(range) {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: range,
-  });
-  const keys = response.data.values.shift();
+    const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: range });
 
-  const result = [];
-  response.data.values.forEach((row) => {
-    const obj = {};
-    keys.forEach((key, i) => {
-      obj[key] = row[i];
+    Logger.debug("got data");
+    Logger.debug(response);
+    Logger.debug(response.data);
+    const keys = response.data.values.shift();
+
+    Logger.debug("parsing data");
+
+    const result = [];
+    response.data.values.forEach((row) => {
+        const obj = {};
+        keys.forEach((key, i) => {
+            obj[key] = row[i];
+        });
+        result.push(obj);
     });
-    result.push(obj);
-  });
-  return result;
+    Logger.debug("returning result");
+    return result;
 }
 
 async function getStudents() {
