@@ -1,4 +1,4 @@
-const Logger =require('./Logger');
+const Logger = require("firebase-functions/logger");
 const jwt = require('jsonwebtoken');
 
 const {

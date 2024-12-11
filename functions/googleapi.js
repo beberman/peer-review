@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const fs = require('fs');
-const Logger =require('./Logger');
+const Logger = require("firebase-functions/logger");
+const path = require('path');
 
 
 // Load service account credentials

@@ -6,11 +6,43 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
+      "rewrites": [
+          {
+              "source": "/helloWorld",
+              "function": "helloWorld"
+          },
+          {
+              "source": "/api/validate",
+              "function": "validate"
+          },
+          {
+              "source": "/api/submit",
+              "function": "submit"
+          },
+          {
+              "source": "/api/questions",
+              "function": "questions"
+          },
+          {
+              "source": "**",
+              "destination": "/index.html"
+          }
+      ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ]
 }
