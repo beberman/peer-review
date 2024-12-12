@@ -11,9 +11,7 @@ const {
   clearData,
 } = require('./googleapi');
 
-const getConfig  = require('./config');
-
-const jwtSecret = getConfig('jwtSecret');
+const {getConfigVariable} = require('./config');
 
 
 async function validate(teamNumber, email) {
@@ -45,7 +43,7 @@ async function validate(teamNumber, email) {
         },
       };
     }
-
+      const jwtSecret = getConfigVariable('jwtSecret');
     const token = jwt.sign({ teamNumber, email }, jwtSecret, {
       expiresIn: '1h',
     });
@@ -108,6 +106,7 @@ async function submit(headers, userID, ratings) {
       };
     }
 
+      const jwtSecret = getConfigVariable('jwtSecret');
     const decoded = jwt.verify(token, jwtSecret);
     Logger.debug('checking decoded', decoded);
     if (student.Email != decoded.email || student.Team != decoded.teamNumber) {

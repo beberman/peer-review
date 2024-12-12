@@ -43,7 +43,8 @@
         "timeoutSeconds": 60,
         "memory": "256MB",
         "setEnvVars": {
-            "NODE_ENV": "production"
+            "NODE_ENV": "production",
+            "GCLOUD_PROJECT": "peer-review-9A4d0"
         }
     }
   ]
