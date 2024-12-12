@@ -26,6 +26,7 @@ async function getSecret(secretName) {
 }
 
 
+
 async function getCredentials() {
 	
 	if (process.env.NODE_ENV === 'development') {
