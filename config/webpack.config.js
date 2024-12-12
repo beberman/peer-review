@@ -7,14 +7,14 @@ module.exports = {
     },
   },
   output: {
-      path: path.resolve(__dirname, 'build'),
-      filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, 'build'),
+    filename: '[name].[contenthash].js',
   },
-    devServer: {
-        watchFiles: {
-            paths: ['src/**/*'],
-        },
-        hot: true,
-        liveReload: true
+  devServer: {
+    watchFiles: {
+      paths: ['src/**/*'],
     },
+    hot: true,
+    liveReload: true,
+  },
 };

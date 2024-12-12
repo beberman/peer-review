@@ -6,4 +6,3 @@ if (require.main === module) {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
-

@@ -1,16 +1,51 @@
 {
   "hosting": {
     "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
+      {
+        "source": "/helloWorld",
+        "function": "helloWorld"
+      },
+      {
+        "source": "/api/validate",
+        "function": "validate"
+      },
+      {
+        "source": "/api/submit",
+        "function": "submit"
+      },
+      {
+        "source": "/api/questions",
+        "function": "questions"
+      },
       {
         "source": "**",
         "destination": "/index.html"
       }
     ]
-  }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+          "node_modules",
+          ".git",
+          ".env",
+          "firebase-debug.log",
+          "firebase-debug.*.log",
+          "*.local"
+      ],
+        "predeploy": [],
+        "runtime": "nodejs18",
+        "source": "functions",
+        "timeoutSeconds": 60,
+        "memory": "256MB",
+        "setEnvVars": {
+            "NODE_ENV": "production",
+            "GCLOUD_PROJECT": "peer-review-9A4d0"
+        }
+    }
+  ]
 }

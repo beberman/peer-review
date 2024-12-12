@@ -1,47 +1,60 @@
 const { google } = require('googleapis');
-const fs = require('fs');
-const path = require('path');
-const Logger = require('./logger');
+const Logger = require('firebase-functions/logger');
 
-require('dotenv').config();
-
-// Load service account credentials
-const credentials = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'sheets-permission.json'))
-);
-
-const spreadsheetId = process.env.SPREADSHEET_ID;
-
-const auth = new google.auth.GoogleAuth({
-  credentials,
-  scopes: [
-    'https://www.googleapis.com/auth/spreadsheets', // Full access to Sheets
-  ],
-});
-
-const sheets = google.sheets({ version: 'v4', auth });
+// Load service account credentials and id
+const {initializeConfigVariables, getConfigVariable} = require('./config');
 
 const StudentData = 'Students!A1:D36';
 const QuestionData = 'Questions!A1:C7';
 const ReviewData = 'Reviews!A1:D500';
 const CommentData = 'Comments!A1:D500';
 
-async function getSheetData(range) {
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId,
-    range: range,
-  });
-  const keys = response.data.values.shift();
+async function getSheetsAPI () {
+    try {
+        await initializeConfigVariables();
 
-  const result = [];
-  response.data.values.forEach((row) => {
-    const obj = {};
-    keys.forEach((key, i) => {
-      obj[key] = row[i];
+        const spreadsheetId = getConfigVariable('spreadsheetId');
+        const credentials = getConfigVariable('credentials');
+
+        Logger.debug('spreadsheetId: ', spreadsheetId);
+        Logger.debug('credentials: ', credentials);
+
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: [
+                'https://www.googleapis.com/auth/spreadsheets', // Full access to Sheets
+            ],
+        });
+    
+        Logger.debug('authorization: ', auth);
+        
+        const sheets = google.sheets({ version: 'v4', auth });
+        return {sheets, spreadsheetId};
+    } catch (error) {
+        Logger.error('Error initializing Google Sheets API:', error);
+        throw new Error('Error initializing Google Sheets API');
+    }
+}
+
+async function getSheetData(range) {
+    const {sheets, spreadsheetId}  = await getSheetsAPI();
+    const response = await sheets.spreadsheets.values.get({ spreadsheetId, range: range });
+
+    Logger.debug("got data");
+    const keys = response.data.values.shift();
+
+    Logger.debug("parsing data");
+
+    const result = [];
+    response.data.values.forEach((row) => {
+        const obj = {};
+        keys.forEach((key, i) => {
+            obj[key] = row[i];
+        });
+        result.push(obj);
     });
-    result.push(obj);
-  });
-  return result;
+    Logger.debug("returning result");
+    return result;
 }
 
 async function getStudents() {
@@ -154,6 +167,7 @@ async function saveRatings(userId, ratings) {
       });
     });
 
+      const {sheets, spreadsheetId}  = await getSheetsAPI();
     /* writing to the Rating sheet */
     if (ratingRows.length > 0) {
       await sheets.spreadsheets.values.append({
@@ -189,7 +203,8 @@ async function saveRatings(userId, ratings) {
 async function clearData() {
   try {
     // Log the received data for debugging
-    Logger.debug('Clearing all data');
+      Logger.debug('Clearing all data');
+      const {sheets, spreadsheetId}  = await getSheetsAPI();
     await sheets.spreadsheets.values.clear({
       spreadsheetId,
       range: 'Reviews!A2:D1000',
