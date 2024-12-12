@@ -1,0 +1,34 @@
+# add everything that's necessary to the secrets
+
+# get the list of secrets
+gcloud secrets list --filter="name:<variable>"
+
+# add a variable
+echo -n "<value>" | gcloud secrets create <variable> --data-file=-
+
+or
+gcloud secrets create <variable --data-file=<path>
+
+# enable the iam policy on the compute engine
+
+# get the service running the compute
+firebase functions:list
+gcloud functions describe <function-name>
+
+#look for the serviceAccountEmail
+gcloud secrets add-iam-policy-binding <variabl>e \
+  --member="serviceAccount:<compute account> \
+  --role="roles/secretmanager.secretAccessor"
+
+#check permissions
+gcloud secrets get-iam-policy <variable>
+
+#deploy
+firebase deploy --only functions
+
+# if deployment problems for firebase make sure you are using the correct account
+gcloud auth list
+
+#use the owner account
+gcloud config set account <owner email>
+
