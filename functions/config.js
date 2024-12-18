@@ -34,7 +34,7 @@ async function getCredentials() {
 		const path = require('path');
 		Logger.debug("loading credentials from file");
 		const credentials = JSON.parse(
-			fs.readFileSync(path.join(__dirname, '../sheets-permission.json')));
+			fs.readFileSync(path.join(__dirname, '../keys/sheets-permission.json')));
 		const spreadsheetId = process.env.SPREADSHEET_ID;
 		const jwtSecret = process.env.JWT_SECRET;
 		return {

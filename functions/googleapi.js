@@ -6,7 +6,7 @@ const {initializeConfigVariables, getConfigVariable} = require('./config');
 
 const StudentData = 'Students!A1:D36';
 const QuestionData = 'Questions!A1:C7';
-const ReviewData = 'Reviews!A1:D500';
+const ReviewData = 'Reviews!A1:D1000';
 const CommentData = 'Comments!A1:D500';
 
 async function getSheetsAPI () {
