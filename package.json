@@ -34,7 +34,7 @@
   "scripts": {
     "start": "firebase serve --only functions,hosting",
     "build": "webpack --config webpack.config.js && react-scripts",
-    "deploye": "firebase deploy --only functions,hosting",
+    "deploy": "firebase deploy --only functions,hosting",
     "test": "react-scripts test",
     "runserver": "node server.js",
     "devserver": "nodemon server.js"
