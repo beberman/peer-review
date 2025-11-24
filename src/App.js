@@ -6,7 +6,7 @@ import Login from './components/Login';
 import Survey from './components/Survey';
 import Done from './pages/Done';
 
-const done = true;
+const done = false;
 
 function App() {
 	if (done) {
