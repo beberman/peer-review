@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   entry: './src/index.js', // Main entry file
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'public'),
     filename: 'bundle.js',
     libraryTarget: 'commonjs2', // Required for Firebase Functions
   },

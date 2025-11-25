@@ -18,7 +18,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
-    "react-scripts": "^5.0.1",
+    "react-scripts": "^0.0.0",
     "styled-components": "^6.1.13",
     "web-vitals": "^2.1.4"
   },
@@ -72,12 +72,14 @@
     "@babel/preset-react": "^7.26.3",
     "@testing-library/react": "^16.1.0",
     "babel-loader": "^9.2.1",
+    "css-loader": "^7.1.2",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "gh-pages": "^6.2.0",
     "jest": "^27.5.1",
     "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.4.2",
+    "style-loader": "^4.0.0",
     "supertest": "^7.0.0",
     "webpack": "^5.97.1",
     "webpack-cli": "^5.1.4"
