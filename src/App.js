@@ -9,6 +9,7 @@ import Done from './pages/Done';
 const done = false;
 
 function App() {
+    console.log("App rendered, done =", done);
 	if (done) {
 		return (
 			<Router>

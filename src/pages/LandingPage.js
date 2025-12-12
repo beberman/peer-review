@@ -5,7 +5,7 @@ function LandingPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [teamNumber, setTeamNumber] = useState('');
-  const numberTeams = 8;
+  const numberTeams = 10;
 
   const teams = Array.from({ length: numberTeams }, (_, i) => i + 1).map(
     (teamNumber) => ({

@@ -4,10 +4,10 @@ const Logger = require('firebase-functions/logger');
 // Load service account credentials and id
 const {initializeConfigVariables, getConfigVariable} = require('./config');
 
-const StudentData = 'Students!A1:D36';
+const StudentData = 'Students!A1:D50';
 const QuestionData = 'Questions!A1:C7';
-const ReviewData = 'Reviews!A1:D1000';
-const CommentData = 'Comments!A1:D500';
+const ReviewData = 'Reviews!A1:D2000';
+const CommentData = 'Comments!A1:D2000';
 
 async function getSheetsAPI () {
     try {
@@ -66,10 +66,13 @@ async function checkStudent(email, teamid) {
   const data = await getStudents();
   const teamidStr = teamid.toString();
 
+    Logger.debug("checking student", emailLowerCase, teamidStr);
+    
   const result = data.find((obj) => {
     return obj.Email.toLowerCase() === emailLowerCase && obj.Team === teamidStr;
   });
 
+    Logger.debug("Got check student result", result);
   if (result) {
     if (Array.isArray(result)) {
       return result[0];

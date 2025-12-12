@@ -19,3 +19,8 @@ grades based on peer comments.
 To update for new semester, update the list of students in the google sheet
 ETR-500 Student Peer Reviews. Then update the App.js to make the done flag
 false.  Redeploy the application.
+
+To update for a new year:
+- update the google sheet
+- make sure the number of teams is correct in the landing page
+- make sure that the range on the students in the validate function is correct.
